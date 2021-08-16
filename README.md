@@ -1,0 +1,2 @@
+# GoldLog
+ Logs gold data

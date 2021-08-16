@@ -1,0 +1,14 @@
+Date: 19.04.2020	Gold: 420mg	Buckets: 18	#Comment: Badhus
+Date: 03.05.2020	Gold: 320mg	Buckets: 16	#Comment: Badhus, unter Huette
+Date: 10.05.2020	Gold: 320mg	Buckets: 20	#Comment: Badhus, unter Huette
+Date: 31.05.2020	Gold: 440mg	Buckets: 18	#Comment: 100m unter Huette, erstes mal mit Mirjam
+Date: 21.06.2020	Gold: 540mg	Buckets: 25	#Comment: 100m unter Huette mit Timothy
+Date: 27.06.2020	Gold: 430mg	Buckets: 16	#Comment: 100m unter Huette, solo
+Date: 02.04.2021	Gold: 400mg	Buckets: 24	#Comment: Badhus mit David
+Date: 05.04.2020	Gold: 460mg	Buckets: 20	#Comment: Badhus mit Timothy
+Date: 10.04.2021	Gold: 270mg	Buckets: 24	#Comment: Badhus mit Timothy
+Date: 25.04.2021	Gold: 310mg	Buckets: 21	#Comment: Badhus mit Timothy
+Date: 08.05.2021	Gold: 150mg	Buckets: 20	#Comment: Badhus alleine, sluce got loose
+'
+
+Total Gold: 4.72g	Total buckets: 252	Buckets for a gram: 53.3898

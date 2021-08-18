@@ -3,6 +3,7 @@
 #include <string>
 #include <fstream>
 #include <ctime>
+#include "myfunctions.hpp"
 
 using std::cin;
 using std::cout;
@@ -11,7 +12,6 @@ using std::string;
 using std::fstream;
 using std::ofstream;
 using std::stoi;
-
 
 int main() {
     string exitProgram;
@@ -23,9 +23,6 @@ int main() {
     cout <<"    | |__| | | (_) | | | | (_| | "<< endl;
     cout <<"     \\_____|  \\___/  |_|  \\__,_| "<< endl;
                          
-                         
-
-
     while (exitProgram!="q") {
         double totalWeight;
         string fileNameLog("GoldLog.txt");
@@ -49,8 +46,7 @@ int main() {
         double bucketsPerGram = 0;
         string nothing;
 
-        time_t now = time(0);
-        tm *ltm = localtime(&now);
+        //promting user for data
         cout << "\nEnter gold finding Date(DD.MM.YYYY): ";
         cin >> dayOfDigging;
 
@@ -64,27 +60,69 @@ int main() {
         getline(cin, comment);
         double weightOfGold = (totalWeight - 10.14)*1000;
         
+        copyFile(fileNameLog, tempFile, fileContent);
 
-        fileoutLog.open(fileNameLog);
-        fileoutTemp.open(tempFile);
+        addNewData(tempFile, fileNameDb, fileContent, dayOfDigging, weightOfGold, buckets, comment);
+
+        int* count = counters(fileNameDb);
+        
+        //writes the statistics to the GoldLog file.
+        fileoutTemp.open(tempFile, std::ios_base::app);
+        if (!fileoutTemp.is_open()) {
+            cout << "failed to open " << tempFile << '\n' << endl;
+        } 
+        else
+        {
+            bucketsPerGram = count[1]/(count[0]/1000);
+            fileoutTemp << "\'" << endl;
+            fileoutTemp << "\nTotal Gold: " << count[0]/1000 << "g" << "\tTotal buckets: " << count[1] << "\tBuckets for a gram: "<< bucketsPerGram << endl;
+            fileoutTemp.close();
+            
+        }
+
+        //removing the old file and renaming the new one, to make it look like it was just written to and not copied.
+        remove(oldFile);
+        int result = rename(newFile, oldFile);
+        //displays statistics in the terminal.
+        cout << "\nNew Gold added: " << weightOfGold << "mg" << endl;
+        cout << "\nTotal Gold: " << count[0]/1000 << "g" << "\tTotal buckets: " << count[1] << "\tBuckets for a gram: "<< bucketsPerGram << endl;
+        cout << "\nPress \"q\" to quit or \"c\" to continue" << endl;
+        cin >> exitProgram;
+
+    }
+    return 0;
+}    
+
+//Makes a copy of current to temporary File, in order to get rid of the statisics at the bottom.
+void copyFile(string fileNameLog, string tempFile, string fileContent){
+    fstream fileoutLog;
+    ofstream fileoutTemp;
+    fileoutLog.open(fileNameLog);
+    fileoutTemp.open(tempFile);
         while (fileContent != "\'"){
-                    getline(fileoutLog, fileContent);
-                    if (fileContent == "\'")
-                    {
-                        fileoutTemp.clear();
-                        fileoutTemp.close();
-                        cout << "[+]reached end of file" << endl;
-                    }
-                    else
-                    {
-                        fileoutTemp << fileContent << endl;
-                        cout << "[+]printing lines" << endl;
-                    }
+            getline(fileoutLog, fileContent);
+            if (fileContent == "\'"){
+                fileoutTemp.clear();
+                fileoutTemp.close();
+                cout << "[+]reached end of file" << endl;
+            } else {
+                fileoutTemp << fileContent << endl;
+                cout << "[+]printing lines" << endl;
+            }
         }
         fileoutLog.clear();
         fileoutLog.close();
+        return;
+}
 
-        fileoutTemp.open(tempFile, std::ios_base::app);
+//Adds the user entered data to the temporary file.
+void addNewData(string tempFile, string fileNameDb, string fileContent, string dayOfDigging, double weightOfGold, int buckets, string comment){
+    ofstream fileoutTemp;
+    fstream fileoutDb;
+    time_t now = time(0);
+    tm *ltm = localtime(&now);
+
+    fileoutTemp.open(tempFile, std::ios_base::app);
         if (!fileoutTemp.is_open()) {
             cout << "failed to open " << tempFile << '\n' << endl;
         } 
@@ -102,59 +140,41 @@ int main() {
                 fileoutDb << dayOfDigging << " " << 1 + ltm->tm_mon << " " << 1900 + ltm->tm_year << " " << weightOfGold << " " << buckets << endl;
                 cout << "[+]Done Writing!" << endl;
                 fileoutDb.close();
-                fileoutDb.open(fileNameDb);
-                while (fileoutDb >> fileContent)
-                {
-                    int fileContentNum = stoi(fileContent);
-                    if (wordCounter <= 4)
-                    {
-                        if (wordCounter==3)
-                        {
-                            totalWeightOfGold +=fileContentNum;
-                            wordCounter++;
-                        }
-
-                        else if (wordCounter==4)
-                        {
-                            totalBuckets +=fileContentNum;
-                            wordCounter = 0;
-                            timesWentThere++;
-                        }
-                        
-                        else
-                        {
-                            wordCounter++;
-                        }
-                          
-                    }
-                    
-                }
-                
             }
-            fileoutDb.close();
-            fileoutLog.close();
-            fileoutTemp.close();
         }
-        fileoutTemp.open(tempFile, std::ios_base::app);
-        if (!fileoutTemp.is_open()) {
-            cout << "failed to open " << tempFile << '\n' << endl;
-        } 
-        else
-        {
-            bucketsPerGram = totalBuckets/(totalWeightOfGold/1000);
-            fileoutTemp << "\'" << endl;
-            fileoutTemp << "\nTotal Gold: " << totalWeightOfGold/1000 << "g" << "\tTotal buckets: " << totalBuckets << "\tBuckets for a gram: "<< bucketsPerGram << endl;
-            fileoutTemp.close();
-            
-        }
-        remove(oldFile);
-        int result = rename(newFile, oldFile);
-        cout << "\nNew Gold added: " << weightOfGold << "mg" << endl;
-        cout << "\nTotal Gold: " << totalWeightOfGold/1000 << "g" << "\tTotal buckets: " << totalBuckets << "\tBuckets for a gram: "<< bucketsPerGram << endl;
-        cout << "\nPress \"q\" to quit or \"c\" to continue" << endl;
-        cin >> exitProgram;
-    }
-    return 0;
-}    
-    
+}   
 
+//Keeps track of all the counting and adds that to an array which the values are taken out of in the main function.
+int* counters(string fileNameDb){
+    static int a[4];
+    fstream fileoutDb;
+    string fileContent;
+    int wordCounter = 0;
+    double totalWeightOfGold = 0;
+    int totalBuckets = 0;
+    int timesWentThere = 0;
+
+    fileoutDb.open(fileNameDb);
+        while (fileoutDb >> fileContent){
+            int fileContentNum = stoi(fileContent);
+                if (wordCounter==3){
+                    totalWeightOfGold +=fileContentNum;
+                    wordCounter++;
+                }
+
+                else if (wordCounter==4){
+                    totalBuckets +=fileContentNum;
+                    wordCounter = 0;
+                    timesWentThere++;
+                }
+                        
+                else{
+                    wordCounter++;
+                }                    
+        }
+    a[0] = totalWeightOfGold;
+    a[1] = totalBuckets;
+    a[2] = timesWentThere;
+    fileoutDb.close();
+    return a;
+}

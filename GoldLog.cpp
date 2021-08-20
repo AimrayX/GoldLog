@@ -3,6 +3,7 @@
 #include <string>
 #include <fstream>
 #include <ctime>
+#include "sqlite3.h"
 #include "myfunctions.hpp"
 
 using std::cin;
@@ -15,7 +16,7 @@ using std::stoi;
 
 int main() {
     string exitProgram;
-
+    
     cout <<"      _____           _       _ "<< endl;
     cout <<"     / ____|         | |     | | "<< endl;
     cout <<"    | |  __    ___   | |    _| | "<< endl;
@@ -115,12 +116,34 @@ void copyFile(string fileNameLog, string tempFile, string fileContent){
         return;
 }
 
+int callback(void *NotUsed, int argc, char **argv, char **azColName){
+
+
+    // Return successful
+    return 0;
+}
+
 //Adds the user entered data to the temporary file.
 void addNewData(string tempFile, string fileNameDb, string fileContent, string dayOfDigging, double weightOfGold, int buckets, string comment){
     ofstream fileoutTemp;
     fstream fileoutDb;
     time_t now = time(0);
     tm *ltm = localtime(&now);
+
+    char* errmsg;
+    sqlite3* db;
+    sqlite3_stmt* stat;
+    sqlite3_open("GoldLogDb.db", &db);
+    int rc = sqlite3_exec(db, "CREATE TABLE IF NOT EXIST GoldData(comment varchar(100),x1 INT, x2 INT, x3 INT, x4 INT);", callback, 0, &errmsg);
+    if(rc != SQLITE_OK){
+        cout << "error: " << errmsg;
+    }
+    else
+    {
+        string sql = "INSERT INTO GoldData(comment, x1) VALUES ('Hello',"+dayOfDigging+")";
+        sqlite3_exec(db, sql.c_str(), callback, 0, &errmsg);
+    }
+    
 
     fileoutTemp.open(tempFile, std::ios_base::app);
         if (!fileoutTemp.is_open()) {

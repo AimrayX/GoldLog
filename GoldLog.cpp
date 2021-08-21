@@ -1,180 +1,110 @@
-
 #include <iostream>
 #include <string>
-#include <fstream>
-#include <ctime>
+#include "sqlite3.h"
 #include "myfunctions.hpp"
 
-using std::cin;
-using std::cout;
-using std::endl;
-using std::string;
-using std::fstream;
-using std::ofstream;
-using std::stoi;
+using namespace std;
 
 int main() {
-    string exitProgram;
-
+    char userInput;
+    
     cout <<"      _____           _       _ "<< endl;
     cout <<"     / ____|         | |     | | "<< endl;
     cout <<"    | |  __    ___   | |    _| | "<< endl;
     cout <<"    | | |_ |  / _ \\  | |  / _` | "<< endl;
     cout <<"    | |__| | | (_) | | | | (_| | "<< endl;
     cout <<"     \\_____|  \\___/  |_|  \\__,_| "<< endl;
-                         
-    while (exitProgram!="q") {
-        double totalWeight;
-        string fileNameLog("GoldLog.txt");
-        fstream fileoutLog;
-        int buckets;
-        string dayOfDigging;
-        string fileNameDb("DataBase.txt");
-        fstream fileoutDb;
-        string fileContent;
-        int sizeOfFile;
-        string concatContent;
-        int wordCounter = 0;
-        double totalWeightOfGold = 0;
-        int totalBuckets = 0;
-        string tempFile("tempG.txt");
-        char oldFile[] = "GoldLog.txt";
-        char newFile[] = "tempG.txt";
-        ofstream fileoutTemp;
-        int timesWentThere = 0;
-        string comment = "No comment.";
-        double bucketsPerGram = 0;
-        string nothing;
 
-        //promting user for data
-        cout << "\nEnter gold finding Date(DD.MM.YYYY): ";
-        cin >> dayOfDigging;
+    while (userInput != 'q') {
 
-        cout << "\nEnter weight of Flasque: ";
-        cin >> totalWeight;
-        cout << "\n";
-        cout << "\nEnter bucket count: ";
-        cin >> buckets;
-        cout << "\nAdd a comment: ";
-        getline(cin, nothing);
-        getline(cin, comment);
-        double weightOfGold = (totalWeight - 10.14)*1000;
-        
-        copyFile(fileNameLog, tempFile, fileContent);
+        cout << "\nWould you like to add an entry(a) or print out the current statistics(s)? " << endl;
+        cin >> userInput;
 
-        addNewData(tempFile, fileNameDb, fileContent, dayOfDigging, weightOfGold, buckets, comment);
+        if(userInput == 'a'){
 
-        int* count = counters(fileNameDb);
-        
-        //writes the statistics to the GoldLog file.
-        fileoutTemp.open(tempFile, std::ios_base::app);
-        if (!fileoutTemp.is_open()) {
-            cout << "failed to open " << tempFile << '\n' << endl;
-        } 
-        else
-        {
-            bucketsPerGram = count[1]/(count[0]/1000);
-            fileoutTemp << "\'" << endl;
-            fileoutTemp << "\nTotal Gold: " << count[0]/1000 << "g" << "\tTotal buckets: " << count[1] << "\tBuckets for a gram: "<< bucketsPerGram << endl;
-            fileoutTemp.close();
-            
+            while (userInput != 'q' && userInput != 'e') {
+                double totalWeight;
+                string fileNameLog("GoldLog.txt");
+                int buckets;
+                string dateOfDigging;
+                int sizeOfFile;
+                int wordCounter = 0;
+                double totalWeightOfGold = 0;
+                int totalBuckets = 0;
+                int timesWentThere = 0;
+                string comment = "No comment.";
+                double bucketsPerGram = 0;
+                string nothing;
+
+                //promting user for data
+                cout << "\nEnter gold finding Date(DD.MM.YYYY): ";
+                cin >> dateOfDigging;
+
+                cout << "\nEnter weight of Flasque: ";
+                cin >> totalWeight;
+                cout << "\n";
+                cout << "\nEnter bucket count: ";
+                cin >> buckets;
+                cout << "\nAdd a comment: ";
+                getline(cin, nothing);
+                getline(cin, comment);
+                int weightOfGold = (totalWeight - 10.14)*1000;
+
+                WriteToDataBase(dateOfDigging, to_string(weightOfGold), to_string(buckets), comment);
+
+                cout << "\nWould you like to exit this function(e), quit the program(q) or continue(c)? ";
+                cin >> userInput;
+            }
+    
         }
-
-        //removing the old file and renaming the new one, to make it look like it was just written to and not copied.
-        remove(oldFile);
-        int result = rename(newFile, oldFile);
-        //displays statistics in the terminal.
-        cout << "\nNew Gold added: " << weightOfGold << "mg" << endl;
-        cout << "\nTotal Gold: " << count[0]/1000 << "g" << "\tTotal buckets: " << count[1] << "\tBuckets for a gram: "<< bucketsPerGram << endl;
-        cout << "\nPress \"q\" to quit or \"c\" to continue" << endl;
-        cin >> exitProgram;
-
+        else if(userInput == 's'){
+            getDataFromDB();
+            cout << "\nWould you like to quit the program(q) or continue(c)?";
+            cin >> userInput;
+        }
+        else{
+            cout << "\nNot a valid input" << endl;
+        }
     }
-    return 0;
+return 0;   
 }    
 
-//Makes a copy of current to temporary File, in order to get rid of the statisics at the bottom.
-void copyFile(string fileNameLog, string tempFile, string fileContent){
-    fstream fileoutLog;
-    ofstream fileoutTemp;
-    fileoutLog.open(fileNameLog);
-    fileoutTemp.open(tempFile);
-        while (fileContent != "\'"){
-            getline(fileoutLog, fileContent);
-            if (fileContent == "\'"){
-                fileoutTemp.clear();
-                fileoutTemp.close();
-                cout << "[+]reached end of file" << endl;
-            } else {
-                fileoutTemp << fileContent << endl;
-                cout << "[+]printing lines" << endl;
-            }
-        }
-        fileoutLog.clear();
-        fileoutLog.close();
-        return;
+int callback(void *NotUsed, int argc, char **argv, char **azColName){  
+    
+    cout << " \nTotal Gold: " << stod(argv[1])/1000 << "g" << "\tTotal Buckets: " << argv[2] << "\tBuckets per Gram: " << stod(argv[2])/(stod(argv[1])/1000) << endl;
+    // Return successful
+    return 0;
 }
 
-//Adds the user entered data to the temporary file.
-void addNewData(string tempFile, string fileNameDb, string fileContent, string dayOfDigging, double weightOfGold, int buckets, string comment){
-    ofstream fileoutTemp;
-    fstream fileoutDb;
-    time_t now = time(0);
-    tm *ltm = localtime(&now);
-
-    fileoutTemp.open(tempFile, std::ios_base::app);
-        if (!fileoutTemp.is_open()) {
-            cout << "failed to open " << tempFile << '\n' << endl;
-        } 
-        
-        else {
-
-            fileoutTemp << "Date: " << dayOfDigging << "\tGold: " << weightOfGold << "mg" << "\tBuckets: " << buckets << "\t#Comment: "<< comment << endl;
-            cout << "[+]Done Writing!" << endl;
-
-            fileoutDb.open(fileNameDb, std::ios_base::app);
-            if (!fileoutDb.is_open()&&!fileoutTemp.is_open()) {
-                cout << "failed to open " << fileNameDb << " or "<< tempFile << '\n' << endl;
-            }
-            else {
-                fileoutDb << dayOfDigging << " " << 1 + ltm->tm_mon << " " << 1900 + ltm->tm_year << " " << weightOfGold << " " << buckets << endl;
-                cout << "[+]Done Writing!" << endl;
-                fileoutDb.close();
-            }
+int WriteToDataBase(string dateOfDigging, string weightOfGold, string buckets, string comment){
+    char* errmsg;
+    sqlite3* db;
+    sqlite3_stmt* stat;
+    sqlite3_open("GoldLog.db", &db);
+    string query = "CREATE TABLE IF NOT EXISTS GoldData(id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, Date varchar(11), Gold INT, Buckets INT, Comment varchar(100));";
+    int rc = sqlite3_exec(db, query.c_str() , callback, 0, &errmsg);
+    if (rc != SQLITE_OK)
+    {
+        cout << errmsg << endl;
+    }
+    else {
+    query = "INSERT INTO GoldData(Date, Gold, Buckets, Comment) VALUES (\""+dateOfDigging+"\", "+weightOfGold+", "+buckets+", \""+comment+"\")";
+    rc = sqlite3_exec(db, query.c_str(), callback, 0, &errmsg);
+        if (rc != SQLITE_OK)
+        {
+            cout << errmsg << endl;
         }
-}   
+    }
+    sqlite3_close(db);   
+return 0;
+}
 
-//Keeps track of all the counting and adds that to an array which the values are taken out of in the main function.
-int* counters(string fileNameDb){
-    static int a[4];
-    fstream fileoutDb;
-    string fileContent;
-    int wordCounter = 0;
-    double totalWeightOfGold = 0;
-    int totalBuckets = 0;
-    int timesWentThere = 0;
-
-    fileoutDb.open(fileNameDb);
-        while (fileoutDb >> fileContent){
-            int fileContentNum = stoi(fileContent);
-                if (wordCounter==3){
-                    totalWeightOfGold +=fileContentNum;
-                    wordCounter++;
-                }
-
-                else if (wordCounter==4){
-                    totalBuckets +=fileContentNum;
-                    wordCounter = 0;
-                    timesWentThere++;
-                }
-                        
-                else{
-                    wordCounter++;
-                }                    
-        }
-    a[0] = totalWeightOfGold;
-    a[1] = totalBuckets;
-    a[2] = timesWentThere;
-    fileoutDb.close();
-    return a;
+int getDataFromDB(){
+    char* errmsg;
+    sqlite3* db;
+    sqlite3_stmt* stat;
+    sqlite3_open("GoldLog.db", &db);
+    string query = "SELECT MAX(id), SUM(Gold), SUM(Buckets) FROM GoldData";
+    int rc = sqlite3_exec(db, query.c_str() , callback, 0, &errmsg);
+    return 0;
 }

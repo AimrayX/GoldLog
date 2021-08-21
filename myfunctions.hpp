@@ -4,9 +4,9 @@
 
 #include <string>
 
-void copyFile(std::string fileNameLog, std::string tempFile, std::string fileContent);
-void addNewData(std::string tempFile, std::string fileNameDb, std::string fileContent, std::string dayOfDigging, double weightOfGold, int buckets, std::string comment);
-int* counters(std::string fileNameDb);
+int callback(void *NotUsed, int argc, char **argv, char **azColName);
+int WriteToDataBase(std::string dateOfDigging, std::string weightOfGold, std::string buckets, std::string comment);
+int getDataFromDB();
 
 #endif
 

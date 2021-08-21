@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <string>
 #include "sqlite3.h"
@@ -55,8 +54,6 @@ int main() {
 
                 cout << "\nWould you like to exit this function(e), quit the program(q) or continue(c)? ";
                 cin >> userInput;
-                cout << userInput << endl;
-
             }
     
         }
@@ -74,7 +71,7 @@ return 0;
 
 int callback(void *NotUsed, int argc, char **argv, char **azColName){  
     
-    cout << "Total Gold: " << stod(argv[1])/1000 << "g" << "\tTotal Buckets: " << argv[2] << "\tBuckets per Gram: " << stod(argv[2])/(stod(argv[1])/1000) << endl;
+    cout << " \nTotal Gold: " << stod(argv[1])/1000 << "g" << "\tTotal Buckets: " << argv[2] << "\tBuckets per Gram: " << stod(argv[2])/(stod(argv[1])/1000) << endl;
     // Return successful
     return 0;
 }
